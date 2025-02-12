@@ -4,6 +4,7 @@ Vincent Brouillet
 TP6
 project rock, papier, cissors sur arcade
 """
+import random
 
 import arcade
 
@@ -29,6 +30,7 @@ class MyGame(arcade.Window):
         self.appuyer = None
         self.score1 = None
         self.score2 = None
+        self.win_lose = None
 
         self.player = None
         self.compy = None
@@ -47,6 +49,8 @@ class MyGame(arcade.Window):
         self.d_paper = None
         self.d_cissors = None
 
+        self.compy_move = None
+
         """
         self.player_attack_type = {
             AttackType.ROCK: False,
@@ -62,6 +66,7 @@ class MyGame(arcade.Window):
         self.appuyer = arcade.Text(" ", 100, 500, arcade.color.LIGHT_BLUE, 20)
         self.score1 = arcade.Text("pointage du joueur", 100, 50, arcade.color.LIGHT_BLUE, 20)
         self.score2 = arcade.Text("pointage de l'ordinateur", 500, 50, arcade.color.LIGHT_BLUE, 20)
+        self.win_lose = arcade.Text("", 250, 450, arcade.color.LIGHT_BLUE, 20)
 
         self.player = arcade.Sprite("assets/faceBeard.png", 0.4, 200, 300)
         self.compy = arcade.Sprite("assets/compy.png", 2, 600, 300)
@@ -74,9 +79,6 @@ class MyGame(arcade.Window):
         self.rock = AttackAnimation(AttackType.ROCK)
         self.paper = AttackAnimation(AttackType.PAPER)
         self.cissors = AttackAnimation(AttackType.CISSORS)
-        # self.rock = arcade.Sprite("assets/assets/srock.png", 0.6, 80, 150)
-        # self.paper = arcade.Sprite("assets/assets/spaper.png", 0.6, 210, 150)
-        # self.cissors = arcade.Sprite("assets/assets/scissors.png", 0.6, 340, 150)
         self.rock_list = arcade.SpriteList()
         self.paper_list = arcade.SpriteList()
         self.cissors_list = arcade.SpriteList()
@@ -87,6 +89,8 @@ class MyGame(arcade.Window):
         self.d_rock = True
         self.d_paper = True
         self.d_cissors = True
+
+        self.compy_move = None
 
     def on_draw(self):
         self.clear()
@@ -102,7 +106,32 @@ class MyGame(arcade.Window):
             self.appuyer.text = "Appuyer sur 'Espace' pour commencer un nouveau round!"
         else:
             pass
+
         self.classic_object()
+        self.compy_move_draw()
+
+    def on_update(self, delta_time):
+        self.rock.on_update(delta_time)
+        self.paper.on_update(delta_time)
+        self.cissors.on_update(delta_time)
+
+        if not self.d_rock or not self.d_paper or not self.d_cissors and self.state == GameState.ROUND_ACTIVE:
+
+            compy_move_list = ["rock", "paper", "cissors"]
+            self.compy_move = random.choice(compy_move_list)
+
+            if self.d_rock and self.compy_move == "cissors" or self.d_paper and self.compy_move == "rock" or self.d_cissors and self.compy_move == "paper":
+                self.win_lose.text = "Vous avez gagner le round!"
+            elif self.d_rock and self.compy_move == "paper" or self.d_paper and self.compy_move == "cissors" or self.d_cissors and self.compy_move == "rock":
+                self.win_lose.text = "compy a gagner le round!"
+            else:
+                self.win_lose.text = "égalité"
+
+            self.state = GameState.ROUND_DONE
+
+            self.d_rock = True
+            self.d_paper = True
+            self.d_cissors = True
 
     def on_key_press(self, key, key_modifiers):
         if key == arcade.key.SPACE and self.state == GameState.NOT_STARTED:
@@ -126,12 +155,38 @@ class MyGame(arcade.Window):
         self.score1.draw()
         self.score2.draw()
         self.appuyer.draw()
+        self.win_lose.draw()
+
+        self.rock.center_x = 80
+        self.rock.center_y = 150
+
+        self.paper.center_x = 210
+        self.paper.center_y = 150
+
+        self.cissors.center_x = 340
+        self.cissors.center_y = 150
+
         if self.d_rock:
             self.rock_list.draw()
         if self.d_paper:
             self.paper_list.draw()
         if self.d_cissors:
             self.cissors_list.draw()
+
+    def compy_move_draw(self):
+        if self.compy_move == "rock":
+            self.rock.center_x = 600
+            self.rock.center_y = 150
+            self.rock_list.draw()
+        elif self.compy_move == "paper":
+            self.paper.center_x = 600
+            self.paper.center_y = 150
+            self.paper_list.draw()
+        elif self.compy_move == "cissors":
+            self.cissors.center_x = 600
+            self.cissors.center_y = 150
+            self.cissors_list.draw()
+
 
 
 def main():
