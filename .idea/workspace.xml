@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5f316529-92df-4b7a-87a3-1017054114d3" name="Changes" comment="v2">
+    <list default="true" id="5f316529-92df-4b7a-87a3-1017054114d3" name="Changes" comment="v3&#10;need score&#10;rock inst working for compy">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/attack_animation.py" beforeDir="false" afterPath="$PROJECT_DIR$/attack_animation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -125,13 +124,22 @@
       <option name="project" value="LOCAL" />
       <updated>1739303701064</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="v3&#10;need score&#10;rock inst working for compy">
+      <option name="closed" value="true" />
+      <created>1739375112026</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1739375112026</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="v1" />
     <MESSAGE value="v2" />
-    <option name="LAST_COMMIT_MESSAGE" value="v2" />
+    <MESSAGE value="v3&#10;need score&#10;rock inst working for compy" />
+    <option name="LAST_COMMIT_MESSAGE" value="v3&#10;need score&#10;rock inst working for compy" />
   </component>
 </project>

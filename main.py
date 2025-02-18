@@ -51,21 +51,19 @@ class MyGame(arcade.Window):
 
         self.compy_move = None
 
-        """
-        self.player_attack_type = {
-            AttackType.ROCK: False,
-            AttackType.PAPER: False,
-            AttackType.SCISSORS: False
-        }
-        """
+        self.pointage_joueur = None
+        self.pointage_bot = None
 
     def setup(self):
         self.state = GameState.NOT_STARTED
 
+        self.pointage_joueur = 0
+        self.pointage_bot = 0
+
         self.rpc = arcade.Text("Roche, Papier, ciseaux", 100, 550, arcade.color.RED_DEVIL, 50)
         self.appuyer = arcade.Text(" ", 100, 500, arcade.color.LIGHT_BLUE, 20)
-        self.score1 = arcade.Text("pointage du joueur", 100, 50, arcade.color.LIGHT_BLUE, 20)
-        self.score2 = arcade.Text("pointage de l'ordinateur", 500, 50, arcade.color.LIGHT_BLUE, 20)
+        self.score1 = arcade.Text(f"pointage du joueur:{self.pointage_joueur}", 100, 50, arcade.color.LIGHT_BLUE, 20)
+        self.score2 = arcade.Text(f"pointage de l'ordinateur:{self.pointage_bot}", 500, 50, arcade.color.LIGHT_BLUE, 20)
         self.win_lose = arcade.Text("", 250, 450, arcade.color.LIGHT_BLUE, 20)
 
         self.player = arcade.Sprite("assets/faceBeard.png", 0.4, 200, 300)
@@ -115,27 +113,61 @@ class MyGame(arcade.Window):
         self.paper.on_update(delta_time)
         self.cissors.on_update(delta_time)
 
-        if not self.d_rock or not self.d_paper or not self.d_cissors and self.state == GameState.ROUND_ACTIVE:
+        if self.state == GameState.ROUND_ACTIVE:
+            if not self.d_rock or not self.d_paper or not self.d_cissors:
 
-            compy_move_list = ["rock", "paper", "cissors"]
-            self.compy_move = random.choice(compy_move_list)
+                compy_move_list = ["rock", "paper", "cissors"]
+                self.compy_move = random.choice(compy_move_list)
 
-            if self.d_rock and self.compy_move == "cissors" or self.d_paper and self.compy_move == "rock" or self.d_cissors and self.compy_move == "paper":
-                self.win_lose.text = "Vous avez gagner le round!"
-            elif self.d_rock and self.compy_move == "paper" or self.d_paper and self.compy_move == "cissors" or self.d_cissors and self.compy_move == "rock":
-                self.win_lose.text = "compy a gagner le round!"
+                if self.d_rock and self.compy_move == "cissors" or self.d_paper and self.compy_move == "rock" or self.d_cissors and self.compy_move == "paper":
+                    self.win_lose.text = "Vous avez gagner le round!"
+                    self.pointage_joueur += 1
+                elif self.d_rock and self.compy_move == "paper" or self.d_paper and self.compy_move == "cissors" or self.d_cissors and self.compy_move == "rock":
+                    self.win_lose.text = "compy a gagner le round!"
+                    self.pointage_bot += 1
+                else:
+                    self.win_lose.text = "égalité"
+
+                self.score1.text = f"pointage du joueur:{self.pointage_joueur}"
+                self.score2.text = f"pointage de l'ordinateur:{self.pointage_bot}"
+
+                self.state = GameState.ROUND_DONE
+
+        elif self.state == GameState.GAME_OVER:
+            if self.pointage_joueur == 3:
+                self.win_lose.text = "Vous avez gagner la partie"
             else:
-                self.win_lose.text = "égalité"
+                self.win_lose.text = "Compy a gagner la partie"
 
-            self.state = GameState.ROUND_DONE
-
-            self.d_rock = True
-            self.d_paper = True
-            self.d_cissors = True
+            self.appuyer.text = "Appuyer sur 'Espace' pour commencer une nouvelle partie!"
 
     def on_key_press(self, key, key_modifiers):
         if key == arcade.key.SPACE and self.state == GameState.NOT_STARTED:
             self.state = GameState.ROUND_ACTIVE
+        elif key == arcade.key.SPACE and self.state == GameState.ROUND_DONE:
+            if self.pointage_joueur == 3 or self.pointage_bot == 3:
+                self.state = GameState.GAME_OVER
+            else:
+                self.d_rock = True
+                self.d_paper = True
+                self.d_cissors = True
+                self.win_lose.text = ""
+                self.compy_move = None
+                self.state = GameState.ROUND_ACTIVE
+        elif key == arcade.key.SPACE and self.state == GameState.GAME_OVER:
+            self.pointage_joueur = 0
+            self.pointage_bot = 0
+            self.d_rock = True
+            self.d_paper = True
+            self.d_cissors = True
+            self.win_lose.text = ""
+            self.compy_move = None
+
+            self.score1.text = f"pointage du joueur:{self.pointage_joueur}"
+            self.score2.text = f"pointage de l'ordinateur:{self.pointage_bot}"
+
+            self.state = GameState.ROUND_ACTIVE
+
 
     def on_mouse_press(self, x, y, button, key_modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT and self.state == GameState.ROUND_ACTIVE:
