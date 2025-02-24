@@ -8,7 +8,6 @@ class AttackType(Enum):
     PAPER = 1,
     CISSORS = 2
 
-
 class AttackAnimation(arcade.Sprite):
     ATTACK_SCALE = 0.60
     ANIMATION_SPEED = 5.0

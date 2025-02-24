@@ -45,10 +45,7 @@ class MyGame(arcade.Window):
         self.paper_list = None
         self.cissors_list = None
 
-        self.d_rock = None
-        self.d_paper = None
-        self.d_cissors = None
-
+        self.player_move = None
         self.compy_move = None
 
         self.pointage_joueur = None
@@ -84,10 +81,7 @@ class MyGame(arcade.Window):
         self.paper_list.append(self.paper)
         self.cissors_list.append(self.cissors)
 
-        self.d_rock = True
-        self.d_paper = True
-        self.d_cissors = True
-
+        self.player_move = None
         self.compy_move = None
 
     def on_draw(self):
@@ -96,16 +90,8 @@ class MyGame(arcade.Window):
         for i in self.square_list:
             arcade.draw_lrbt_rectangle_outline(i[0], i[1], i[2], i[3], arcade.color.REDWOOD)
 
-        if self.state == GameState.NOT_STARTED:
-            self.appuyer.text = "Appuyer sur 'Espace' pour commencer un nouveau round!"
-        elif self.state == GameState.ROUND_ACTIVE:
-            self.appuyer.text = "Appuyer sur une image pour faire une attack!"
-        elif self.state == GameState.ROUND_DONE:
-            self.appuyer.text = "Appuyer sur 'Espace' pour commencer un nouveau round!"
-        else:
-            pass
-
         self.classic_object()
+        self.player_move_draw()
         self.compy_move_draw()
 
     def on_update(self, delta_time):
@@ -113,16 +99,20 @@ class MyGame(arcade.Window):
         self.paper.on_update(delta_time)
         self.cissors.on_update(delta_time)
 
-        if self.state == GameState.ROUND_ACTIVE:
-            if not self.d_rock or not self.d_paper or not self.d_cissors:
+        if self.state == GameState.NOT_STARTED:
+            self.appuyer.text = "Appuyer sur 'Espace' pour commencer un nouveau round!"
 
-                compy_move_list = ["rock", "paper", "cissors"]
-                self.compy_move = random.choice(compy_move_list)
+        elif self.state == GameState.ROUND_ACTIVE:
+            self.appuyer.text = "Appuyer sur une image pour faire une attack!"
 
-                if self.d_rock and self.compy_move == "cissors" or self.d_paper and self.compy_move == "rock" or self.d_cissors and self.compy_move == "paper":
+            if self.player_move is not None:
+
+                self.compy_move = random.choice(list(AttackType.__iter__()))
+
+                if self.player_move == AttackType.ROCK and self.compy_move == AttackType.CISSORS or self.player_move == AttackType.PAPER and self.compy_move == AttackType.ROCK or self.player_move == AttackType.CISSORS and self.compy_move == AttackType.PAPER:
                     self.win_lose.text = "Vous avez gagner le round!"
                     self.pointage_joueur += 1
-                elif self.d_rock and self.compy_move == "paper" or self.d_paper and self.compy_move == "cissors" or self.d_cissors and self.compy_move == "rock":
+                elif self.player_move == AttackType.ROCK and self.compy_move == AttackType.PAPER or self.player_move == AttackType.PAPER and self.compy_move == AttackType.CISSORS or self.player_move == AttackType.CISSORS and self.compy_move == AttackType.ROCK:
                     self.win_lose.text = "compy a gagner le round!"
                     self.pointage_bot += 1
                 else:
@@ -132,6 +122,9 @@ class MyGame(arcade.Window):
                 self.score2.text = f"pointage de l'ordinateur:{self.pointage_bot}"
 
                 self.state = GameState.ROUND_DONE
+
+        elif self.state == GameState.ROUND_DONE:
+            self.appuyer.text = "Appuyer sur 'Espace' pour commencer un nouveau round!"
 
         elif self.state == GameState.GAME_OVER:
             if self.pointage_joueur == 3:
@@ -148,40 +141,23 @@ class MyGame(arcade.Window):
             if self.pointage_joueur == 3 or self.pointage_bot == 3:
                 self.state = GameState.GAME_OVER
             else:
-                self.d_rock = True
-                self.d_paper = True
-                self.d_cissors = True
-                self.win_lose.text = ""
-                self.compy_move = None
-                self.state = GameState.ROUND_ACTIVE
+                self.reset_round()
         elif key == arcade.key.SPACE and self.state == GameState.GAME_OVER:
-            self.pointage_joueur = 0
-            self.pointage_bot = 0
-            self.d_rock = True
-            self.d_paper = True
-            self.d_cissors = True
-            self.win_lose.text = ""
-            self.compy_move = None
-
-            self.score1.text = f"pointage du joueur:{self.pointage_joueur}"
-            self.score2.text = f"pointage de l'ordinateur:{self.pointage_bot}"
-
-            self.state = GameState.ROUND_ACTIVE
-
+            self.reset_game()
 
     def on_mouse_press(self, x, y, button, key_modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT and self.state == GameState.ROUND_ACTIVE:
             if self.rock.collides_with_point((x, y)):
-                self.d_paper = False
-                self.d_cissors = False
+                self.player_move = AttackType.ROCK
             elif self.paper.collides_with_point((x, y)):
-                self.d_rock = False
-                self.d_cissors = False
+                self.player_move = AttackType.PAPER
             elif self.cissors.collides_with_point((x, y)):
-                self.d_rock = False
-                self.d_paper = False
+                self.player_move = AttackType.CISSORS
 
     def classic_object(self):
+        """
+        dessine tout les objets static
+        """
         self.rpc.draw()
         self.static_list.draw()
         self.score1.draw()
@@ -189,6 +165,10 @@ class MyGame(arcade.Window):
         self.appuyer.draw()
         self.win_lose.draw()
 
+    def player_move_draw(self):
+        """
+        dessine le choix du joueur (roche, papier ou ciseau)
+        """
         self.rock.center_x = 80
         self.rock.center_y = 150
 
@@ -198,27 +178,58 @@ class MyGame(arcade.Window):
         self.cissors.center_x = 340
         self.cissors.center_y = 150
 
-        if self.d_rock:
+        if self.player_move is None:
             self.rock_list.draw()
-        if self.d_paper:
             self.paper_list.draw()
-        if self.d_cissors:
             self.cissors_list.draw()
+        else:
+            if self.player_move == AttackType.ROCK:
+                self.rock_list.draw()
+            if self.player_move == AttackType.PAPER:
+                self.paper_list.draw()
+            if self.player_move == AttackType.CISSORS:
+                self.cissors_list.draw()
 
     def compy_move_draw(self):
-        if self.compy_move == "rock":
+        """
+        desine le choix de l'ordinateur (roche, papier ou ciseau)
+        """
+        if self.compy_move == AttackType.ROCK:
             self.rock.center_x = 600
             self.rock.center_y = 150
             self.rock_list.draw()
-        elif self.compy_move == "paper":
+        elif self.compy_move == AttackType.PAPER:
             self.paper.center_x = 600
             self.paper.center_y = 150
             self.paper_list.draw()
-        elif self.compy_move == "cissors":
+        elif self.compy_move == AttackType.CISSORS:
             self.cissors.center_x = 600
             self.cissors.center_y = 150
             self.cissors_list.draw()
 
+    def reset_round(self):
+        """
+        reset un round
+        """
+        self.player_move = None
+        self.win_lose.text = ""
+        self.compy_move = None
+        self.state = GameState.ROUND_ACTIVE
+
+    def reset_game(self):
+        """
+        reset une partie
+        """
+        self.pointage_joueur = 0
+        self.pointage_bot = 0
+        self.player_move = None
+        self.win_lose.text = ""
+        self.compy_move = None
+
+        self.score1.text = f"pointage du joueur:{self.pointage_joueur}"
+        self.score2.text = f"pointage de l'ordinateur:{self.pointage_bot}"
+
+        self.state = GameState.ROUND_ACTIVE
 
 
 def main():
